@@ -22,6 +22,86 @@ class _MainScreenState extends State<MainScreen> {
     managerBloc.add(FetchData(index: 1));
   }
 
+  Widget buildItem(context, index) {
+    return Container(
+      alignment: Alignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Flexible(
+            child: Container(
+              child: Image.network(
+                managerBloc.dataList[index]['thumbnailUrl'],
+              ),
+            ),
+          ),
+          Container(
+            width: 135,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              managerBloc.dataList[index]['title'].toString(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.left,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget loadingIndicator() {
+    Size _media = MediaQuery.of(context).size;
+
+    return Container(
+      height: _media.width * 0.8,
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  Widget topPart(ManagerBlocState state) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 10),
+      child: Center(
+        child: ToggleButtons(
+          renderBorder: false,
+          selectedBorderColor: Colors.blue,
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.only(top: 2, left: 5, right: 5, bottom: 2),
+              decoration: BoxDecoration(color: Colors.black),
+              child: Text(
+                '1',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.only(top: 2, left: 5, right: 5, bottom: 2),
+              decoration: BoxDecoration(color: Colors.black),
+              child: Text(
+                '2',
+                style: TextStyle(color: Colors.white),
+              ),
+            )
+          ],
+          isSelected: selections,
+          onPressed: state is ManagerLoading
+              ? null
+              : (index) {
+                  setState(() {
+                    selections[index] = true;
+                    selections[index == 1 ? 0 : 1] = false;
+
+                    managerBloc.add(FetchData(index: index));
+                  });
+                },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Size _media = MediaQuery.of(context).size;
@@ -44,56 +124,12 @@ class _MainScreenState extends State<MainScreen> {
           padding: const EdgeInsets.all(8.0),
           child: BlocBuilder(
             bloc: managerBloc,
-            builder: (context, state) => Column(
+            builder: (BuildContext context, ManagerBlocState state) => Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.only(bottom: 10),
-                  child: Center(
-                    child: ToggleButtons(
-                      renderBorder: false,
-                      selectedBorderColor: Colors.blue,
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.only(
-                              top: 2, left: 5, right: 5, bottom: 2),
-                          decoration: BoxDecoration(color: Colors.black),
-                          child: Text(
-                            '1',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.only(
-                              top: 2, left: 5, right: 5, bottom: 2),
-                          decoration: BoxDecoration(color: Colors.black),
-                          child: Text(
-                            '2',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        )
-                      ],
-                      isSelected: selections,
-                      onPressed: state is ManagerLoading
-                          ? null
-                          : (index) {
-                              setState(() {
-                                selections[index] = true;
-                                selections[index == 1 ? 0 : 1] = false;
-
-                                managerBloc.add(FetchData(index: index));
-                              });
-                            },
-                    ),
-                  ),
-                ),
+                topPart(state),
                 state is ManagerLoading
-                    ? Container(
-                        height: _media.width * 0.8,
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
+                    ? loadingIndicator()
                     : Flexible(
                         child: OrientationBuilder(
                           builder: (context, orientation) => GridView.builder(
@@ -108,34 +144,8 @@ class _MainScreenState extends State<MainScreen> {
                                               ? 5
                                               : 2,
                                       mainAxisSpacing: 10),
-                              itemBuilder: (context, index) => Container(
-                                    alignment: Alignment.center,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Flexible(
-                                          child: Container(
-                                            child: Image.network(
-                                              managerBloc.dataList[index]
-                                                  ['thumbnailUrl'],
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          width: 135,
-                                          alignment: Alignment.centerLeft,
-                                          child: Text(
-                                            managerBloc.dataList[index]['title']
-                                                .toString(),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            textAlign: TextAlign.left,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )),
+                              itemBuilder: (context, index) =>
+                                  buildItem(context, index)),
                         ),
                       )
               ],
