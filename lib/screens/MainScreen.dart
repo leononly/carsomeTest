@@ -19,7 +19,7 @@ class _MainScreenState extends State<MainScreen> {
 
     managerBloc = ManagerBloc();
 
-    managerBloc.add(FetchData(index: 1));
+    managerBloc.add(FetchData(index: 0));
   }
 
   Widget buildItem(context, index) {
